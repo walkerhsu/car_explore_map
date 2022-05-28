@@ -24,28 +24,31 @@ def read():
     # point = score.Scoreboard("data/UID.csv", "team_3")
     maze = mz.Maze("data/maze_8x6_2.csv")
     while True:
-        DirString = input()
-        if DirString == "END" :
-            break
-        else:
-            maze.setDirection(DirString)
-            maze.updateStack()
-            next_move = maze.nextDirection()
-            if next_move != "" :
-                print("Next move : {} (0 : North , 1 : East , 2 : South , 3 : West) \n".format(next_move))
-            elif next_move == "" :
-                break
-        # if bt.waiting():
-        #     DirString = bt.SerialReadString() #North , East , South , West
-        #     if DirString == "END" :
+        # DirString = input()
+        # if DirString == "END" :
+        #     break
+        # else:
+        #     maze.setDirection(DirString)
+        #     maze.updateStack()
+        #     next_move = maze.nextDirection()
+        #     if next_move != "" :
+        #         print("Next move : {} (0 : North , 1 : East , 2 : South , 3 : West) \n".format(next_move))
+        #     elif next_move == "" :
         #         break
-        #     else:
-        #         print(DirString)
-        #         maze.setDirection(DirString)
-        #         tmp = maze.nextDirection(DirString)
-        #         next_dir = ''.join(tmp)
-        #         print(next_dir)
-        #         bt.SerialWrite(tmp)
+        if bt.waiting():
+            DirString = bt.SerialReadString() #North , East , South , West
+            if DirString == "END" :
+                break
+            else:
+                print(DirString)
+                maze.setDirection(DirString)
+                maze.updateStack()
+                next_move = maze.nextDirection()
+                if next_move != "" :
+                    print("Next move : {} (0 : North , 1 : East , 2 : South , 3 : West) \n".format(next_move))
+                elif next_move == "" :
+                    break
+                bt.SerialWrite(next_move+'\n')
             # UID = bt.SerialReadString()
             # print(UID)
             # point.add_UID(UID)
@@ -60,9 +63,9 @@ def write():
         bt.SerialWrite(msgWrite + "\n")
 
 if __name__ == '__main__':
-    # bt = BT.bluetooth("/dev/tty.038-SerialPort") 
-    # while not bt.is_open(): pass
-    # print("BT Connected!")
+    bt = BT.bluetooth("/dev/tty.038-SerialPort") 
+    while not bt.is_open(): pass
+    print("BT Connected!")
 
     # readThread = threading.Thread(target=read)
     # readThread.daemon = True
