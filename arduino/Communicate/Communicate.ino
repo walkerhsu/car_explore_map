@@ -11,8 +11,9 @@ void setup () {
 }
 void loop () {
   while(BT.available()) {
+    delay(5);
     c2=BT.read();
-    Serial.write(c2);
+    Serial.print(c2);
   }
   while(Serial.available()) {
     c2=Serial.read();

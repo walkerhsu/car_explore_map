@@ -17,30 +17,41 @@ class Direction(IntEnum):
     WEST  = 3
 
 class Maze:
-    def __init__(self, filepath):
+    def __init__(self , start , row , column):
         # TODO : read file and implement a data structure you like
 		# For example, when parsing raw_data, you may create several Node objects.  
 		# Then you can store these objects into self.nodes.  
 		# Finally, add to nd_dictionary by {key(index): value(corresponding node)}
         #self.raw_data = pandas.read_csv(filepath).values #returned as two-dimensional data structure with labeled axes.
-        self.rows = 4
-        self.columns = 4
-        self.currentIndex = 0
+        self.rows = row
+        self.columns = column
+        self.startNode = start
+        self.currentIndex = self.startNode
         self.nd_dict = dict()
         self.stack = []
         self.record = []
         self.nextChoice = 0
+        self.END = 0
+        self.setNode()
+
+    def setNode(self):
         for i in range (self.rows):
             for j in range (self.columns):
                 index = (i*self.rows)+j
                 tmpNode = node.Node(self.rows , self.rows ,index)
                 self.nd_dict[index] = tmpNode
-    
+
     def setDirection(self , DirString):
+        print(DirString)
+        for i in range(len(DirString)):
+            print(int(DirString[i]))
         self.record.append(self.currentIndex)
         self.nextChoice=0
         for i in range(len(DirString)):
+            print("DirString[i] = {}".format(DirString[i]))
+            print(DirString[i] == "1")
             self.nd_dict[self.currentIndex].setSuccessor(i , DirString[i])
+        print(self.nd_dict[self.currentIndex].getSuccessors())
         return
 
     def updateStack(self):
@@ -73,10 +84,13 @@ class Maze:
     def backward(self , nextMovement):
         if len(self.stack)==0:
             print("end of tracking , back to startNode...")
+            nextMovement = self.BFS(self.currentIndex , self.startNode)
+            self.currentIndex = self.startNode
+            self.END = 1
             for i in range(self.rows*self.columns):
                 print("Node {} , successors = {}.".format(i , self.nd_dict[i].getSuccessors()))
-            return ""
-            # nextMovement = self.backToStartNode(self.currentIndex)
+            return nextMovement
+            
         elif len(self.stack)!=0:
             nextMovement += self.backToCrossing(self.currentIndex)
             # print(nextMovement)
@@ -99,6 +113,7 @@ class Maze:
         return movement
 
     def backToCrossing(self , currentIndex):
+        print("last crossing : {}".format(self.stack[-1][0]))
         totalMovement = self.BFS(currentIndex , self.stack[-1][0])
         self.currentIndex = self.stack[-1][0]
         return totalMovement
