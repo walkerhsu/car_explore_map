@@ -21,8 +21,8 @@ class Node:
         self.Successors = []
 
     def setSuccessor(self , i , avail):
-        print(avail)
-        print(avail == '1')
+        # print(avail)
+        # print(avail == '1')
         if avail=='1' : 
             nextIndex = self.setNextIndex(i)
             print(nextIndex)

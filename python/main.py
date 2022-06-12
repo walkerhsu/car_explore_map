@@ -18,19 +18,25 @@ import os
 
 def main():
     # TODO : Initialize necessary variables
-    startNode , rows , columns = 1 , 4 , 4
+    startNode , rows , columns = 10 , 3 , 4
     total_route = ""
-    startNode , rows , columns = setMap()
-    total_route = read(startNode , rows , columns)
+    # startNode , rows , columns = setMap()
+    maze = mz.Maze(startNode , rows , columns)
+    total_route = read(maze)
     print("\ncar_visited_route : {}".format(total_route))
     UI = mazeUI.MazeUI(startNode , rows , columns)
     UI.drawMap(total_route)
+    startNode = maze.startNode
+    loop = int(input("search times : "))
+    for i in range(loop):
+        endNode , route = maze.BFStwoNodes(startNode)
+        startNode = endNode
+        bt.SerialWrite(route)
 
     
-def read(startNode , rows , columns):
+def read(maze):
     # point = score.Scoreboard("data/UID.csv", "team_3")
     total_route = ""
-    maze = mz.Maze(startNode , rows , columns)
     print("Go!!")
     bt.SerialWrite("Go!!"+'\n')
     while True:
@@ -55,10 +61,12 @@ def read(startNode , rows , columns):
             DirString = ""
             DirString = DString[0:]
             
-            for i in range(len(DirString)):
-                print("DirString[{}] = {}.".format(i , DirString[i]))
+            # for i in range(len(DirString)):
+            #     print("DirString[{}] = {}.".format(i , DirString[i]))
             if DirString == "END" :
                 return total_route
+            elif DirString == "Block":
+                print("fuck")
             else:
                 print(DirString)
                 maze.setDirection(DirString)
@@ -81,7 +89,6 @@ def setMap():
     rows = int(input("Please input the rows : "))
     columns = int(input("Please input the columns : "))
     return startNode , rows , columns
-
 # def write():
 #     while True:
 #         msgWrite = input()

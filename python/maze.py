@@ -30,26 +30,28 @@ class Maze:
         self.nd_dict = dict()
         self.stack = []
         self.record = []
+        self.successors = []
         self.nextChoice = 0
         self.END = 0
         self.setNode()
 
     def setNode(self):
-        for i in range (self.rows):
-            for j in range (self.columns):
+        for i in range (self.columns):
+            for j in range (self.rows):
                 index = (i*self.rows)+j
-                tmpNode = node.Node(self.rows , self.rows ,index)
+                tmpNode = node.Node(self.rows , self.columns ,index)
                 self.nd_dict[index] = tmpNode
 
+
     def setDirection(self , DirString):
-        print(DirString)
-        for i in range(len(DirString)):
-            print(int(DirString[i]))
+        # print(DirString)
+        # for i in range(len(DirString)):
+        #     print(int(DirString[i]))
         self.record.append(self.currentIndex)
         self.nextChoice=0
         for i in range(len(DirString)):
-            print("DirString[i] = {}".format(DirString[i]))
-            print(DirString[i] == "1")
+            # print("DirString[i] = {}".format(DirString[i]))
+            # print(DirString[i] == "1")
             self.nd_dict[self.currentIndex].setSuccessor(i , DirString[i])
         print(self.nd_dict[self.currentIndex].getSuccessors())
         return
@@ -158,6 +160,14 @@ class Maze:
         else:
             return False
                 
+    def BFStwoNodes(self , start):
+        startNode = start
+        print("start from {}".format(startNode))
+        nodeB = input("end node : ")
+        path = self.BFS(startNode , nodeB)
+        return nodeB , path
+
+
     def BFS(self, nd_from, nd_to):
         cnt=0
         queue = [[nd_from,0]]

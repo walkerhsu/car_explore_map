@@ -95,5 +95,5 @@ class MazeUI:
         self.pencil.setheading(angle)
     
 if __name__ == '__main__':
-    mazeUI = MazeUI(0 , 4 , 4)
-    mazeUI.drawMap("333222111000")
+    mazeUI = MazeUI(0 , 3 , 4)
+    mazeUI.drawMap("3332211100")
