@@ -44,16 +44,10 @@ class Maze:
 
 
     def setDirection(self , DirString):
-        # print(DirString)
-        # for i in range(len(DirString)):
-        #     print(int(DirString[i]))
         self.record.append(self.currentIndex)
         self.nextChoice=0
         for i in range(len(DirString)):
-            # print("DirString[i] = {}".format(DirString[i]))
-            # print(DirString[i] == "1")
             self.nd_dict[self.currentIndex].setSuccessor(i , DirString[i])
-        print(self.nd_dict[self.currentIndex].getSuccessors())
         return
 
     def updateStack(self):
@@ -69,12 +63,7 @@ class Maze:
     def nextDirection(self):
         nextMovement = ""
         if self.nextChoice == 0:
-            while(self.checkRepeat()):
-                self.stack.pop(-1)
-            nextMovement += self.backward(nextMovement)
-            if(len(self.stack)!=0):
-                nextMovement += self.nextMovement()
-            return nextMovement
+            return self.back(nextMovement)
 
         elif self.nextChoice >= 1 and self.nextChoice<=3:
             nextMovement += self.nextMovement()
@@ -82,6 +71,15 @@ class Maze:
         else:
             print("Successors number incorrect !! ")
             return ""
+
+    def back(self , nextMovement ):
+        while(self.checkRepeat()):
+            self.stack.pop(-1)
+        nextMovement += self.backward(nextMovement)
+        
+        if(len(self.stack)!=0):
+            nextMovement += self.nextMovement()
+        return nextMovement
 
     def backward(self , nextMovement):
         if len(self.stack)==0:
@@ -159,16 +157,9 @@ class Maze:
             return True
         else:
             return False
-                
-    def BFStwoNodes(self , start):
-        startNode = start
-        print("start from {}".format(startNode))
-        nodeB = input("end node : ")
-        path = self.BFS(startNode , nodeB)
-        return nodeB , path
-
 
     def BFS(self, nd_from, nd_to):
+        print(nd_from , nd_to)
         cnt=0
         queue = [[nd_from,0]]
         nodeList = []
@@ -180,6 +171,7 @@ class Maze:
             tmplist = queue.pop(0)[:]
             index = tmplist[0]
             tmpNode = self.nd_dict[index]
+            print(tmplist)
              
             for suc in tmpNode.getSuccessors():
                 inRecord=False

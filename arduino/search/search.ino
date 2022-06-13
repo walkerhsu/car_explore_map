@@ -3,7 +3,10 @@ SoftwareSerial BT (13, 12);
 
 #define RST_PIN 49
 #define SS_PIN 53
-
+int trigPinFrLft = 46;
+int echoPinFrLft = 47;
+int trigPinFrRgt = 40;
+int echoPinFrRgt = 41;
 int trigPinFr = 7;                  //Trig Pin
 int echoPinFr = 6;                  //Echo Pin
 int trigPinBk = 52;                  //Trig Pin
@@ -15,10 +18,12 @@ int echoPinRt = 4;                  //Echo Pin
 
 
 float distanceFront = 0;
+float distanceFrontLeft = 0;
+float distanceFrontRight = 0;
 float distanceLeft = 0;
 float distanceRight = 0;
 float distanceBack = 0;
-float distanceWall = 18;
+float distanceWall = 17;
 float errorRange = 3;
 int threshold = 25;
 
@@ -46,6 +51,10 @@ bool start = true;
 void setup() {
   Serial.begin (9600); 
   BT.begin(9600);
+  pinMode(trigPinFrLft, OUTPUT);        
+  pinMode(echoPinFrLft, INPUT);
+  pinMode(trigPinFrRgt, OUTPUT);        
+  pinMode(echoPinFrRgt, INPUT);
   pinMode(trigPinFr, OUTPUT);         
   pinMode(echoPinFr, INPUT);
   pinMode(trigPinLf, OUTPUT);        
@@ -114,19 +123,19 @@ void parallelTracking(double distanceL , double distanceR , char side){
   else if(side=='l'){
     error = distanceL - distanceWall;
   }
-//  if(error <= errorRange && error >= (-1)*errorRange){
+  if(error <= errorRange && error >= (-1)*errorRange){
     float correction = error * Kp;
     vL = vL - correction;
     vR = vR + correction;
-//  }
-//  else if(error < (-1)*errorRange){
-//    vL = vL + Kp*errorRange;
-//    vR = vR - Kp*errorRange;
-//  }
-//  else if(error > errorRange){
-//    vL = vL - Kp*errorRange;
-//    vR = vR + Kp*errorRange;
-//  }
+  }
+  else if(error < (-1)*errorRange){
+    vL = vL + Kp*errorRange;
+    vR = vR - Kp*errorRange;
+  }
+  else if(error > errorRange){
+    vL = vL - Kp*errorRange;
+    vR = vR + Kp*errorRange;
+  }
   Serial.print(vL);
   Serial.print("\n");
   Serial.print(vR);
@@ -135,16 +144,29 @@ void parallelTracking(double distanceL , double distanceR , char side){
   MotorWriting(vL , vR);
 }
 
-void frontObstacle(float distanceFt) {
-   float Vstraight = 80;
-   vL = Vstraight;
-   vR = Vstraight;
-   float KST = 15;
-   if(distanceFt<=distanceWall){
-      vL = vL - (distanceWall - distanceFt)*KST;
-      vR = vR - (distanceWall - distanceFt)*KST;
-   }
+bool frontObstacle(float distanceFront ,float distanceFrontLeft ,float distanceFrontRight) {
+  int thres = 15;
+//  int maxNumb = maxNumber(distanceFront , distanceFrontLeft , distanceFrontRight);
+//  int minNumb = minNumber(distanceFront , distanceFrontLeft , distanceFrontRight);
+  int dis1 = abs(distanceFront - distanceFrontLeft);
+  int dis2 = abs(distanceFront - distanceFrontRight);
+  if(max(dis1 , dis2) >= thres ){
+    return true;
+  }
+  else return false;
 }
+//
+//int maxNumber(float distanceFront ,float distanceFrontLeft ,float distanceFrontRight){
+//  int max1 = max(distanceFront , distanceFrontLeft);
+//  int max2 = max(max1 , distanceFrontRight);
+//  return max2;
+//}
+//
+//int minNumber(float distanceFront ,float distanceFrontLeft ,float distanceFrontRight){
+//  int min1 = min(distanceFront , distanceFrontLeft);
+//  int min2 = min(min1 , distanceFrontRight);
+//  return min2;
+//}
 
 void SpeedCheck() {
   if(vL >= 250){  
@@ -239,7 +261,7 @@ void checkHowToGo(String dir , int curstep){
     Serial.print('L');
     Serial.print("\n");
     MotorWriting( -80 ,80 );
-    delay(820);
+    delay(740);
   }
   else if((movement == 1) || (movement == -3)) {
     // 右轉
@@ -247,14 +269,14 @@ void checkHowToGo(String dir , int curstep){
     Serial.print('R');
     Serial.print("\n");
     MotorWriting( 80 ,-80 );
-    delay(790);
+    delay(750);
   }
   else if((movement == 2) || (movement == -2)) {
     //迴轉
 //    MotorWriting( 0 , 0 );
 //    delay(160);
     MotorWriting( 80 ,-80 );
-    delay(1650);
+    delay(1600);
 //    MotorWriting( 0 , 0 );
 //    delay(160);
 //    c = 'B';
@@ -287,7 +309,8 @@ void SerialtoBT() {
 }
 
 void loop(){
-  if (start == true){
+  bool block = false;
+  if (start){
     while(len==0) BTtoSerial(); 
     checkwhereCanGo(curdir);
     len = 0;
@@ -295,20 +318,13 @@ void loop(){
     start = false;
   }
   for(int i=0; i<len; i++){
-    float disAtFirst = 0 , disNow = 0;
+    float disAtFirst = 0;
     checkHowToGo(dir , i);
-    //Serial.print("distanceback : "); 
-    //disNow = ranging(trigPinBk,echoPinBk);
-    Serial.print("distanceLeft : "); 
-    distanceLeft = ranging(trigPinLf,echoPinLf);
-    Serial.print("distanceRight : "); 
-    distanceRight = ranging(trigPinRt,echoPinRt);
-    Serial.print("distanceBack : "); 
-    distanceBack = ranging(trigPinBk,echoPinBk);
-    Serial.print("distanceFront : "); 
-    distanceFront = ranging(trigPinFr,echoPinFr);
+    setDistance();
     disAtFirst = distanceBack;
-    while(distanceFront>=15 && distanceBack-disAtFirst<=42) { //disNow-disAtFirst<=40 && //distanceRight<=30 && distanceLeft<=30 &&
+    block = frontObstacle(distanceFront , distanceFrontLeft , distanceFrontRight); 
+    Serial.print(block);
+    while((!block) && distanceFront>=15 && distanceBack-disAtFirst<=44) {
       char parallelSide = parallel(distanceLeft , distanceRight);
       if(parallelSide=='l' || parallelSide=='r'){
         parallelTracking(distanceLeft , distanceRight , parallelSide);
@@ -317,26 +333,41 @@ void loop(){
         MotorWriting(80 , 80);
         delay(100);
       }
-      //Serial.print("distanceback : "); 
-      //disNow = ranging(trigPinBk,echoPinBk);
-      //Serial.print("distancefront : "); 
-      Serial.print("distanceLeft : "); 
-      distanceLeft = ranging(trigPinLf,echoPinLf);
-      Serial.print("distanceRight : "); 
-      distanceRight = ranging(trigPinRt,echoPinRt);
-      Serial.print("distanceBack : "); 
-      distanceBack = ranging(trigPinBk,echoPinBk);
-      Serial.print("distanceFront : "); 
-      distanceFront = ranging(trigPinFr,echoPinFr);
+      setDistance();
+      block = frontObstacle(distanceFront , distanceFrontLeft , distanceFrontRight); 
     }
-    if(distanceBack-disAtFirst > 42){
+    if(distanceBack-disAtFirst > 44){
       MotorWriting(0 , 0);
-      delay(300);
+      delay(30);
     }
   }
-  checkwhereCanGo(curdir);
-  len = 0;
-  while(len==0) BTtoSerial();
+  if(block){
+    dir = "";
+    len = 0;
+    checkwhereCanGo(curdir);
+    BT.print("Block\n");
+  }
+    checkwhereCanGo(curdir);
+    len = 0;
+    while(len==0) BTtoSerial();
+}
+
+void setDistance(){
+  Serial.print("distanceFront : "); 
+  distanceFront = ranging(trigPinFr,echoPinFr);
+  Serial.print("distanceLeft : "); 
+  distanceLeft = ranging(trigPinLf,echoPinLf);
+  Serial.print("distanceFrontLeft : "); 
+  distanceFrontLeft = ranging(trigPinFrLft,echoPinFrLft);
+  Serial.print("distanceRight : "); 
+  distanceRight = ranging(trigPinRt,echoPinRt);
+  Serial.print("distanceFrontRight : "); 
+  distanceFrontRight = ranging(trigPinFrRgt,echoPinFrRgt);
+  Serial.print("distanceBack : "); 
+  distanceBack = ranging(trigPinBk,echoPinBk);
+  
+  
+  
 }
 
 

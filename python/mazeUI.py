@@ -39,9 +39,19 @@ class MazeUI:
         self.screen.exitonclick()
     
     def drawRoute(self , route):
+        lastroute = "5"
         for nextMove in route:
-            self.pencil.dot(self.circleRadius)
-            self.drawNextMove(int(nextMove))
+            if(nextMove == "4") :
+                self.pencil.dot(self.circleRadius , "red")
+                nextMove = self.reverseRoute(int(lastroute))
+                self.drawNextMove(int(nextMove) , "red")
+            else:
+                self.pencil.dot(self.circleRadius , "black")
+                self.drawNextMove(int(nextMove) , "black")
+                lastroute = nextMove
+
+    def reverseRoute(self , lastroute):
+        return (lastroute+2)%4
 
     def checkNodeExist(self):
         for node in self.nodeRecord:
@@ -49,26 +59,10 @@ class MazeUI:
                 return True
         return False
             
-    def drawNextMove(self , nextMove):
-        self.setTurtle(self.movementTable[nextMove][0])
+    def drawNextMove(self , nextMove , color):
+        self.setTurtle(self.movementTable[nextMove][0] , color)
         self.pencil.goto(self.pencil.xcor() + self.movementTable[nextMove][1] ,
-                         self.pencil.ycor() + self.movementTable[nextMove][2])
-        # if nextMove == '0':
-        #     # self.addRecord(-1)
-        #     self.setTurtle(90)
-        #     self.pencil.goto(self.pencil.xcor() , self.pencil.ycor() + self.unit_height )
-        # elif nextMove == '1':
-        #     # self.addRecord(-1*self.rows)
-        #     self.setTurtle(0)
-        #     self.pencil.goto(self.pencil.xcor() + self.unit_width , self.pencil.ycor())
-        # elif nextMove == '2':
-        #     # self.addRecord(1)
-        #     self.setTurtle(270)
-        #     self.pencil.goto(self.pencil.xcor() , self.pencil.ycor() - self.unit_height )            
-        # elif nextMove == '3':
-        #     # self.addRecord(self.rows)
-        #     self.setTurtle(180)
-        #     self.pencil.goto(self.pencil.xcor() - self.unit_width , self.pencil.ycor())
+                         self.pencil.ycor() + self.movementTable[nextMove][2] , )
 
         self.pencil.hideturtle()
 
@@ -89,11 +83,12 @@ class MazeUI:
         self.nodeRecord.append(self.index+deltaNode)
         self.index += deltaNode
 
-    def setTurtle(self , angle):
+    def setTurtle(self , angle , color):
         self.pencil.showturtle()
         self.pencil.fillcolor("red")
+        self.pencil.color(color)
         self.pencil.setheading(angle)
     
 if __name__ == '__main__':
     mazeUI = MazeUI(0 , 3 , 4)
-    mazeUI.drawMap("3332211100")
+    mazeUI.drawMap("33230421110433301011")

@@ -18,7 +18,7 @@ import os
 
 def main():
     # TODO : Initialize necessary variables
-    startNode , rows , columns = 10 , 3 , 4
+    startNode , rows , columns = 5 , 2 , 3
     total_route = ""
     # startNode , rows , columns = setMap()
     maze = mz.Maze(startNode , rows , columns)
@@ -26,12 +26,7 @@ def main():
     print("\ncar_visited_route : {}".format(total_route))
     UI = mazeUI.MazeUI(startNode , rows , columns)
     UI.drawMap(total_route)
-    startNode = maze.startNode
-    loop = int(input("search times : "))
-    for i in range(loop):
-        endNode , route = maze.BFStwoNodes(startNode)
-        startNode = endNode
-        bt.SerialWrite(route)
+    
 
     
 def read(maze):
@@ -66,24 +61,42 @@ def read(maze):
             if DirString == "END" :
                 return total_route
             elif DirString == "Block":
-                print("fuck")
+                print("Block")
+                while True:
+                    if bt.waiting():
+                        DirString = bt.SerialReadString() #North , East , South , West
+                        maze.setDirection(DirString)
+                        maze.updateStack()
+                        next_move = maze.nextDirection()
+                        total_route += "4"
+                        print(next_move)
+                        next_move = next_move[1:]
+                        total_route = nextStep(next_move , total_route)
+                        if maze.END == 1 :
+                            print("End of tracking !! ")
+                            bt.SerialWrite(next_move + "\n")
+                            return total_route
+                        bt.SerialWrite(next_move)
             else:
                 print(DirString)
                 maze.setDirection(DirString)
                 maze.updateStack()
                 next_move = maze.nextDirection()
-                if next_move != "" :
-                    print("Next move : {} (0 : North , 1 : East , 2 : South , 3 : West) \n".format(next_move))
-                    total_route += next_move
-                elif next_move == "" :
-                    print("NextMovement error")
-                    break
+                total_route = nextStep(next_move , total_route)
                 if maze.END == 1 :
-                        print("End of tracking !! ")
-                        bt.SerialWrite(next_move + "\n")
-                        return total_route
+                    print("End of tracking !! ")
+                    bt.SerialWrite(next_move + "\n")
+                    return total_route
             bt.SerialWrite(next_move)
-            # bt.SerialWrite(next_move + "\n")
+
+def nextStep(next_move , total_route):
+    if next_move != "" :
+        print("Next move : {} (0 : North , 1 : East , 2 : South , 3 : West) \n".format(next_move))
+        total_route += next_move
+    elif next_move == "" :
+        print("NextMovement error")
+    return total_route
+
 def setMap():
     startNode = int(input("Please input the startNode : "))
     rows = int(input("Please input the rows : "))

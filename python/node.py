@@ -1,4 +1,3 @@
-import math
 from cmath import nan
 from enum import IntEnum
 
@@ -18,6 +17,7 @@ class Node:
         self.row = rows
         self.column = columns
         self.index = index
+        self.block = False
         self.Successors = []
 
     def setSuccessor(self , i , avail):
@@ -25,7 +25,6 @@ class Node:
         # print(avail == '1')
         if avail=='1' : 
             nextIndex = self.setNextIndex(i)
-            print(nextIndex)
             if nextIndex<0 or nextIndex>=(self.column*self.row):
                 self.Successors.append([nan , nan][:])
                 # print("For Node {}, successor {} is out of bounds.".format(self.index , nextIndex) )
